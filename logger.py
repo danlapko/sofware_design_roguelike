@@ -4,7 +4,6 @@ import os
 import logging
 import config as c
 
-
 __author__ = 'Danila Lapko'
 
 formatter = logging.Formatter(u'[%(filename)-12s%(lineno)4d%(funcName)30s()]# %(levelname)-8s   %(message)s')
