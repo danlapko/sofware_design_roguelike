@@ -42,17 +42,6 @@ class TextsContainer(Drawable, Updatable):
             self.text_surface = self.get_surface(line, myfont)
             context.surface.blit(self.text_surface, (self.base_x, self.base_y + i * self.text_surface.get_size()[1]))
 
-    def draw_final_text(self, context, text):
-        log.info("Drawing final text:" + text)
-
-        text += "\nPress any key to exit."
-        lines = text.split("\n")
-        myfont = pygame.font.SysFont('Comic Sans MS', 28)
-        for i, line in enumerate(lines):
-            self.text_surface = self.get_surface(line, myfont)
-            context.surface.blit(self.text_surface,
-                                 (self.base_x, self.base_y + i * self.text_surface.get_size()[1] + 250))
-
     def get_surface(self, text, font):
         text_surface = font.render(text, False, (0, 120, 0), (0, 0, 0))
         return text_surface

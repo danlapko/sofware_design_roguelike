@@ -83,7 +83,8 @@ class Context:
 
     def run(self):
         log.info("Starting main loop")
-        step_num = 0
+
+        self.show_start_up_shout_down_text("Press arrow to start")
         while not self.is_game_over:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -100,15 +101,24 @@ class Context:
             pygame.display.update()
             self.clock.tick(c.frame_rate)
 
-            step_num += 1
+    def show_start_up_shout_down_text(self, text):
+        self.surface.fill((0, 0, 0))
+
+        font = pygame.font.SysFont('Comic Sans MS', 28)
+
+        lines = text.split("\n")
+        for i, line in enumerate(lines):
+            text_surface = font.render(line, False, (0, 120, 0), (0, 0, 0))
+            self.surface.blit(text_surface,
+                              (c.win_height * 2 // 5, c.win_width * 2 // 5 + i * text_surface.get_size()[1]))
+        pygame.display.update()
+        self.clock.tick(c.frame_rate)
 
     def game_over(self, win_flag):
         if win_flag:
-            self.texts_container.draw_final_text(self, "YOU ARE WIN!")
-            self._redraw()
+            self.show_start_up_shout_down_text("YOU WIN!\nPress any key to exit")
         else:
-            self.texts_container.draw_final_text(self, "FAIL, YOU DIED!")
-            self._redraw()
+            self.show_start_up_shout_down_text("FAIL, YOU DIED!\nPress any key to exit")
         pygame.display.update()
         self.clock.tick(c.frame_rate)
         while 1:
