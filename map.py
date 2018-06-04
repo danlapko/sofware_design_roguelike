@@ -1,14 +1,12 @@
-from abc import abstractmethod
-
 import pygame
 
 import config as c
-
 from interfaces import Drawable, Updatable
 from logger import log
 
 
 class Empty(Drawable):
+    """ Empty map cell """
 
     def __init__(self, i, j):
         self.i = i
@@ -21,13 +19,14 @@ class Empty(Drawable):
         image_corner_map = pygame.transform.scale(self.image,
                                                   (context.corner_map_view.cell_w, context.corner_map_view.cell_h))
         context.surface.blit(image_main_map, context.main_map_view.cell_to_coords(self.i, self.j))
-        # context.surface.blit(image_corner_map, context.corner_map_view.cell_to_coords(self.i, self.j))
         pygame.draw.rect(context.surface, (76, 153, 0),
                          (*context.corner_map_view.cell_to_coords(self.i, self.j), context.corner_map_view.cell_w,
                           context.corner_map_view.cell_h))
 
 
 class Wall(Drawable):
+    """ Wall map cell """
+
     def __init__(self, i, j):
         self.i = i
         self.j = j
@@ -39,13 +38,15 @@ class Wall(Drawable):
         image_corner_map = pygame.transform.scale(self.image,
                                                   (context.corner_map_view.cell_w, context.corner_map_view.cell_h))
         context.surface.blit(image_main_map, context.main_map_view.cell_to_coords(self.i, self.j))
-        # context.surface.blit(image_corner_map, context.corner_map_view.cell_to_coords(self.i, self.j))
         pygame.draw.rect(context.surface, (100, 100, 100),
                          (*context.corner_map_view.cell_to_coords(self.i, self.j), context.corner_map_view.cell_w,
                           context.corner_map_view.cell_h))
 
 
 class Map(Updatable):
+    """ The whole map.
+    Each cell of the grid (data) contains list of three elements:
+    [Background_obj (Empty or Wall), Immovable_obj (None possible), Actor_obj (None possible)] """
 
     def __init__(self):
         log.info("Creating Map")
@@ -67,7 +68,7 @@ class Map(Updatable):
             self.n_cols = len(lines[0])
 
             self.data = [None] * len(lines)
-            self.data = [[None] * len(lines[0]) for row in self.data]
+            self.data = [[None] * len(lines[0]) for _ in self.data]
 
             main_actor_found = False
             for i, line in enumerate(lines):
@@ -98,13 +99,13 @@ class Map(Updatable):
 
                     else:
                         raise ValueError("Invalid map symbol: " + elem)
-                    # print("created", elem, self.data[i][j])
 
     def update(self, event, context):
         pass
 
 
 class AbstractMapView(Drawable):
+    """ Abstact Map View for different map representation. Contains reference to map as field. """
     def __init__(self, map: Map, cell_w, cell_h, base_x, base_y):
         log.info("Creating MapView:" + str(self.__class__))
 
@@ -122,17 +123,17 @@ class AbstractMapView(Drawable):
         return x, y
 
     def draw(self, context):
-        # print("draw()", self.__class__)
         for i in range(self.map.n_rows):
             for j in range(self.map.n_cols):
                 cell_list = self.map.data[i][j]
-                # print("\t", i, j, cell_list)
                 cell_list[0].draw(context)
 
 
 class MainMapView(AbstractMapView):
+    """ Map View for Main map. """
     pass
 
 
 class CornerMapView(AbstractMapView):
+    """ Map View for Corner map. """
     pass

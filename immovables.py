@@ -8,6 +8,8 @@ from logger import log
 
 
 class Immovable(Drawable):
+    """ Now only prizes (boxes) are Immovable. """
+
     possible_prizes = ["food", "knife"]
 
     def __init__(self, i, j):
@@ -23,7 +25,6 @@ class Immovable(Drawable):
         image_corner_map = pygame.transform.scale(self.image,
                                                   (context.corner_map_view.cell_w, context.corner_map_view.cell_h))
         context.surface.blit(image_main_map, context.main_map_view.cell_to_coords(self.i, self.j))
-        # context.surface.blit(image_corner_map, context.corner_map_view.cell_to_coords(self.i, self.j))
         pygame.draw.rect(context.surface, (200, 100, 0),
                          (*context.corner_map_view.cell_to_coords(self.i, self.j), context.corner_map_view.cell_w,
                           context.corner_map_view.cell_h))
@@ -38,6 +39,8 @@ class Immovable(Drawable):
 
 
 class ImmovablesContainer(Drawable, Updatable):
+    """ Container for Immovables storing together for easy management and updating """
+
     def __init__(self):
         log.info("Creating ImmovablesContainer")
         self.buf = []
@@ -46,7 +49,6 @@ class ImmovablesContainer(Drawable, Updatable):
         self.buf.append(immovable)
 
     def update(self, event, context):
-        # TODO
         pass
 
     def draw(self, context):

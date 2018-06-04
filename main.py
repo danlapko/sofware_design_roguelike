@@ -11,6 +11,12 @@ from logger import log
 
 
 class Context:
+    """
+    Stores main entities: map, map_views, main_actor, immovables, mobs.
+    Also stores main pygame entities as like surface.
+    Handles and dispatches events.
+    Passes self to entities methods with a view to enabling them to address the global context.
+    """
     def __init__(self):
         # my fields
         self.map = None
@@ -34,7 +40,6 @@ class Context:
     def _init_fields(self):
         self.map = Map()
 
-        # self.main_actor = MainActor()
         self.mobs_container = MobsContainer()
         self.immovables_container = ImmovablesContainer()
 

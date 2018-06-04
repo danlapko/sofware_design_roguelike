@@ -9,6 +9,10 @@ from logger import log
 
 
 class AbstactActor(Drawable, Updatable):
+    """
+    Abstract actor - is a movable object. Actors can be "MainActor" and "Zombie" (the last one I mistakenly called "Mob")
+    Abstract actor tries to move to neighbor cell at each step and performs various actions depending on who he meets with.
+    """
     def __init__(self, i, j, image_path):
         self.i = i
         self.j = j
@@ -73,6 +77,7 @@ class AbstactActor(Drawable, Updatable):
 
 
 class MainActor(AbstactActor):
+    """ Main Hero """
     def __init__(self, i, j, image_path):
         super().__init__(i, j, image_path)
         self.dressed_equipment = []
@@ -148,6 +153,7 @@ class MainActor(AbstactActor):
 
 
 class Mob(AbstactActor):
+    """ in other words Zombie """
     def update(self, event, context):
         possible_keys = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
         key = random.randint(0, 3)
@@ -200,6 +206,7 @@ class Mob(AbstactActor):
 
 
 class MobsContainer(Drawable, Updatable):
+    """ Container for Mobs storing together for easy management and updating """
     def __init__(self):
         log.info("Creating mobs container")
 

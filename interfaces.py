@@ -8,6 +8,7 @@ class Drawable(ABC):
 
 
 class Updatable(ABC):
+    """ Each one who can change it state on next step is Updatable """
     @abstractmethod
     def update(self, event, context):
         pass

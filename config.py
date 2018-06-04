@@ -1,3 +1,5 @@
+""" Main config """
+
 background_image = "data/images/background.jpg"
 wall_image = "data/images/wall.jpg"
 empty_image = "data/images/empty.png"
