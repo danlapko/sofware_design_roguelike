@@ -8,7 +8,7 @@ mob_image = "data/images/mob.png"
 immovable_image = "data/images/immovable.png"
 
 map_path = "data/maps_fields/map1.txt"
-log_path = "data/log/"
+log_path = "data/"
 
 main_map_cell_w = 50
 main_map_cell_h = 50

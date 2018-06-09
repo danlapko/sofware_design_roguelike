@@ -17,6 +17,7 @@ class Context:
     Handles and dispatches events.
     Passes self to entities methods with a view to enabling them to address the global context.
     """
+
     def __init__(self):
         # my fields
         self.map = None
