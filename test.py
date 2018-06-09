@@ -9,7 +9,7 @@ from main import Context
 from map import Map, Wall, Empty
 
 
-class MyTestCase(unittest.TestCase):
+class RoguelikeTest(unittest.TestCase):
 
     def test_load_map_simple(self):
         context = Context()
