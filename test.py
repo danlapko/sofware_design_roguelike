@@ -15,23 +15,23 @@ class RoguelikeTest(unittest.TestCase):
         context = Context()
         map = Map()
         map.load_map("data/maps_fields/map1.txt", context)
-        self.assertTrue(isinstance(map.data[-1][-1][0], Wall))
-        self.assertTrue(isinstance(map.data[1][1][0], Empty))
+        self.assertTrue(isinstance(map.data[-1][-1].background, Wall))
+        self.assertTrue(isinstance(map.data[1][1].background, Empty))
 
     def test_load_map_immovable(self):
         context = Context()
         map = Map()
         map.load_map("data/maps_fields/map1.txt", context)
-        self.assertTrue(isinstance(map.data[-2][-5][0], Empty))
-        self.assertTrue(isinstance(map.data[-2][-5][1], Immovable))
+        self.assertTrue(isinstance(map.data[-2][-5].background, Empty))
+        self.assertTrue(isinstance(map.data[-2][-5].immovable, Immovable))
 
     def test_load_map_main_actor(self):
         context = Context()
         map = Map()
         map.load_map("data/maps_fields/map1.txt", context)
-        self.assertTrue(isinstance(map.data[-3][-9][0], Empty))
-        self.assertEqual(map.data[-3][-9][1], None)
-        self.assertTrue(isinstance(map.data[-3][-9][2], MainActor))
+        self.assertTrue(isinstance(map.data[-3][-9].background, Empty))
+        self.assertEqual(map.data[-3][-9].immovable, None)
+        self.assertTrue(isinstance(map.data[-3][-9].actor, MainActor))
 
     def test_bad_map(self):
         context = Context()
@@ -46,7 +46,7 @@ class RoguelikeTest(unittest.TestCase):
 
     def test_context(self):
         context = Context()
-        self.assertEquals(len(context.immovables_container.buf), 5)
+        self.assertEquals(len(context.immovables_container.buf), 7)
         self.assertEquals(len(context.mobs_container.buf), 4)
 
 

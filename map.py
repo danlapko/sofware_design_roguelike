@@ -1,16 +1,15 @@
 import pygame
 
 import config as c
-from interfaces import Drawable, Updatable
+from interfaces import Drawable, Updatable, OnMapPlaceable
 from logger import log
 
 
-class Empty(Drawable):
-    """ Empty map cell """
+class Empty(OnMapPlaceable, Drawable):
+    """ Background cell """
 
     def __init__(self, i, j):
-        self.i = i
-        self.j = j
+        super().__init__(i, j)
         self.image = pygame.image.load(c.empty_image)
 
     def draw(self, context):
@@ -24,12 +23,11 @@ class Empty(Drawable):
                           context.corner_map_view.cell_h))
 
 
-class Wall(Drawable):
-    """ Wall map cell """
+class Wall(OnMapPlaceable, Drawable):
+    """ Background cell """
 
     def __init__(self, i, j):
-        self.i = i
-        self.j = j
+        super().__init__(i, j)
         self.image = pygame.image.load(c.wall_image)
 
     def draw(self, context):
@@ -41,6 +39,22 @@ class Wall(Drawable):
         pygame.draw.rect(context.surface, (100, 100, 100),
                          (*context.corner_map_view.cell_to_coords(self.i, self.j), context.corner_map_view.cell_w,
                           context.corner_map_view.cell_h))
+
+
+class Cell(OnMapPlaceable, Drawable, Updatable):
+    """ Cell container for three types of objects that can be placed on map at the same time """
+
+    def __init__(self, i, j, background=None, immovable=None, actor=None):
+        super().__init__(i, j)
+        self.actor = actor
+        self.immovable = immovable
+        self.background = background
+
+    def update(self, event, context):
+        pass
+
+    def draw(self, context):
+        pass
 
 
 class Map(Updatable):
@@ -76,26 +90,26 @@ class Map(Updatable):
                 for j, elem in enumerate(line):
                     if elem == ".":
                         log.info("Creating Empty cell, coords: " + str(i) + " " + str(j))
-                        self.data[i][j] = [Empty(i, j), None, None]
+                        self.data[i][j] = Cell(i, j, Empty(i, j), None, None)
                     elif elem == "#":
                         log.info("Creating Wall cell, coords: " + str(i) + " " + str(j))
-                        self.data[i][j] = [Wall(i, j), None, None]
+                        self.data[i][j] = Cell(i, j, Wall(i, j), None, None)
                     elif elem == "A":
                         log.info("Creating MainActor cell, coords: " + str(i) + " " + str(j))
                         assert False == main_actor_found, "more then one main Actors found"
                         main_actor_found = True
                         context.main_actor = MainActor(i, j, c.main_actor_image)
-                        self.data[i][j] = [Empty(i, j), None, context.main_actor]
+                        self.data[i][j] = Cell(i, j, Empty(i, j), None, context.main_actor)
                     elif elem == "M":
                         log.info("Creating Mob cell, coords: " + str(i) + " " + str(j))
                         mob = Mob(i, j, c.mob_image)
                         context.mobs_container.add_mob(mob)
-                        self.data[i][j] = [Empty(i, j), None, mob]
+                        self.data[i][j] = Cell(i, j, Empty(i, j), None, mob)
                     elif elem == "I":
                         log.info("Creating Immutable cell, coords: " + str(i) + " " + str(j))
                         immovable = Immovable(i, j)
                         context.immovables_container.add_immovable(immovable)
-                        self.data[i][j] = [Empty(i, j), immovable, None]
+                        self.data[i][j] = Cell(i, j, Empty(i, j), immovable, None)
 
                     else:
                         raise ValueError("Invalid map symbol: " + elem)
@@ -106,6 +120,7 @@ class Map(Updatable):
 
 class AbstractMapView(Drawable):
     """ Abstact Map View for different map representation. Contains reference to map as field. """
+
     def __init__(self, map: Map, cell_w, cell_h, base_x, base_y):
         log.info("Creating MapView:" + str(self.__class__))
 
@@ -125,8 +140,8 @@ class AbstractMapView(Drawable):
     def draw(self, context):
         for i in range(self.map.n_rows):
             for j in range(self.map.n_cols):
-                cell_list = self.map.data[i][j]
-                cell_list[0].draw(context)
+                cell = self.map.data[i][j]
+                cell.background.draw(context)
 
 
 class MainMapView(AbstractMapView):

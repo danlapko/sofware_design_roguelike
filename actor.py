@@ -2,20 +2,20 @@ import random
 
 import pygame
 
-from interfaces import Drawable, Updatable
+from interfaces import Drawable, Updatable, OnMapPlaceable
 from abc import abstractmethod
 import config as c
 from logger import log
 
 
-class AbstactActor(Drawable, Updatable):
+class AbstactActor(OnMapPlaceable, Drawable, Updatable):
     """
     Abstract actor - is a movable object. Actors can be "MainActor" and "Zombie" (the last one I mistakenly called "Mob")
     Abstract actor tries to move to neighbor cell at each step and performs various actions depending on who he meets with.
     """
+
     def __init__(self, i, j, image_path):
-        self.i = i
-        self.j = j
+        super().__init__(i, j)
         self.image = pygame.image.load(image_path)
         self.hp = 100
         self.power_koef = 1.0
@@ -38,28 +38,41 @@ class AbstactActor(Drawable, Updatable):
     def try_move_to(self, i, j, context) -> bool:
         from map import Wall, Empty
 
-        cell_back, cell_immovable, cell_actor = context.map.data[i][j]
+        cell = context.map.data[i][j]
 
-        if isinstance(cell_back, Wall):
+        if isinstance(cell.background, Wall):
             self.face_with_wall(i, j, context)
             return False
-        elif cell_actor is not None:
+        elif cell.actor is not None:
             self.face_with_actor(i, j, context)
             return False
-        elif cell_immovable is not None:
+        elif cell.immovable is not None:
             self.face_with_immovable(i, j, context)
             return True
-        elif isinstance(cell_back, Empty):
+        elif isinstance(cell.background, Empty):
             self.face_with_empty(i, j, context)
             return True
 
-        raise ValueError("Invalid cell")
+        raise ValueError(f"Invalid cell ({i},{j}): {cell} {cell.__dict__}")
+
+    def move_selector(self, key, context):
+        if key == pygame.K_UP:
+            self.try_move_to(self.i, self.j - 1, context)
+
+        elif key == pygame.K_DOWN:
+            self.try_move_to(self.i, self.j + 1, context)
+
+        elif key == pygame.K_LEFT:
+            self.try_move_to(self.i - 1, self.j, context)
+
+        elif key == pygame.K_RIGHT:
+            self.try_move_to(self.i + 1, self.j, context)
 
     def move_to(self, i, j, context):
-        context.map.data[self.i][self.j][2] = None
+        context.map.data[self.i][self.j].actor = None
         self.i = i
         self.j = j
-        context.map.data[self.i][self.j][2] = self
+        context.map.data[self.i][self.j].actor = self
 
     def face_with_empty(self, i, j, context):
         self.move_to(i, j, context)
@@ -68,7 +81,6 @@ class AbstactActor(Drawable, Updatable):
         pass
 
     def face_with_immovable(self, i, j, context):
-
         self.move_to(i, j, context)
 
     @abstractmethod
@@ -78,27 +90,18 @@ class AbstactActor(Drawable, Updatable):
 
 class MainActor(AbstactActor):
     """ Main Hero """
+
     def __init__(self, i, j, image_path):
         super().__init__(i, j, image_path)
         self.dressed_equipment = []
 
     def update(self, event, context):
-        if event.key == pygame.K_UP:
-            self.try_move_to(self.i, self.j - 1, context)
-
-        elif event.key == pygame.K_DOWN:
-            self.try_move_to(self.i, self.j + 1, context)
-
-        elif event.key == pygame.K_LEFT:
-            self.try_move_to(self.i - 1, self.j, context)
-
-        elif event.key == pygame.K_RIGHT:
-            self.try_move_to(self.i + 1, self.j, context)
+        self.move_selector(event.key, context)
 
     def face_with_immovable(self, i, j, context):
         log.info("MainActor facing with immovable:" + str(i) + " " + str(j))
 
-        immovable = context.map.data[i][j][1]
+        immovable = context.map.data[i][j].immovable
         if immovable.prize == "food":
             self.hp += 50
         else:
@@ -116,7 +119,7 @@ class MainActor(AbstactActor):
         else:
             cur_power_koef += c.attack_power_coef
 
-        mob = context.map.data[i][j][2]
+        mob = context.map.data[i][j].actor
         mob_power_koef = mob.power_koef
         if j < self.j:
             mob_power_koef += c.head_power_coef
@@ -154,25 +157,27 @@ class MainActor(AbstactActor):
 
 class Mob(AbstactActor):
     """ in other words Zombie """
+
     def update(self, event, context):
-        possible_keys = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
-        key = random.randint(0, 3)
-        key = possible_keys[key]
 
-        if key == pygame.K_UP:
-            self.try_move_to(self.i, self.j - 1, context)
+        sign = lambda x: -1 if x < 0 else +1
+        rnd = random.random()
+        if rnd < 0.7:
+            delta_i = context.main_actor.i - self.i
+            delta_j = context.main_actor.j - self.j
+            if abs(delta_i) > abs(delta_j):
+                self.try_move_to(self.i + sign(delta_i), self.j, context)
+            else:
+                self.try_move_to(self.i, self.j + sign(delta_j), context)
 
-        elif key == pygame.K_DOWN:
-            self.try_move_to(self.i, self.j + 1, context)
-
-        elif key == pygame.K_LEFT:
-            self.try_move_to(self.i - 1, self.j, context)
-
-        elif key == pygame.K_RIGHT:
-            self.try_move_to(self.i + 1, self.j, context)
+        else:
+            possible_keys = [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN]
+            key = random.randint(0, 3)
+            key = possible_keys[key]
+            self.move_selector(key, context)
 
     def face_with_actor(self, i, j, context):
-        mob = context.map.data[i][j][2]
+        mob = context.map.data[i][j].actor
         if not isinstance(mob, MainActor):
             return
 
@@ -202,11 +207,12 @@ class Mob(AbstactActor):
                 del context.mobs_container.buf[i]
                 break
 
-        context.map.data[self.i][self.j][2] = None
+        context.map.data[self.i][self.j].actor = None
 
 
 class MobsContainer(Drawable, Updatable):
     """ Container for Mobs storing together for easy management and updating """
+
     def __init__(self):
         log.info("Creating mobs container")
 

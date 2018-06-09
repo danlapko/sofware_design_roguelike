@@ -6,6 +6,7 @@ from logger import log
 
 class TextsContainer(Drawable, Updatable):
     """ Render text of MainActor statistics. Text is obtained from text_callback"""
+
     def __init__(self, base_x, base_y, text_callback):
         log.info("Creating TextsContainer text_callback:" + str(text_callback))
 

@@ -35,7 +35,7 @@ class Immovable(Drawable):
                 del context.immovables_container.buf[i]
                 break
 
-        context.map.data[self.i][self.j][1] = None
+        context.map.data[self.i][self.j].immovable = None
 
 
 class ImmovablesContainer(Drawable, Updatable):
