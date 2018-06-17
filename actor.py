@@ -2,6 +2,7 @@ import random
 
 import pygame
 
+from immovables import Immovable
 from interfaces import Drawable, Updatable, OnMapPlaceable
 from abc import abstractmethod
 import config as c
@@ -40,13 +41,15 @@ class AbstactActor(OnMapPlaceable, Drawable, Updatable):
 
         cell = context.map.data[i][j]
 
+        top_cell_obj = None if not cell.stack else cell.stack[-1]
+
         if isinstance(cell.background, Wall):
             self.face_with_wall(i, j, context)
             return False
-        elif cell.actor is not None:
+        elif isinstance(top_cell_obj, AbstactActor):
             self.face_with_actor(i, j, context)
             return False
-        elif cell.immovable is not None:
+        elif isinstance(top_cell_obj, Immovable):
             self.face_with_immovable(i, j, context)
             return True
         elif isinstance(cell.background, Empty):
@@ -69,10 +72,10 @@ class AbstactActor(OnMapPlaceable, Drawable, Updatable):
             self.try_move_to(self.i + 1, self.j, context)
 
     def move_to(self, i, j, context):
-        context.map.data[self.i][self.j].actor = None
+        del context.map.data[self.i][self.j].stack[-1]
         self.i = i
         self.j = j
-        context.map.data[self.i][self.j].actor = self
+        context.map.data[self.i][self.j].stack.append(self)
 
     def face_with_empty(self, i, j, context):
         self.move_to(i, j, context)
@@ -101,7 +104,7 @@ class MainActor(AbstactActor):
     def face_with_immovable(self, i, j, context):
         log.info("MainActor facing with immovable:" + str(i) + " " + str(j))
 
-        immovable = context.map.data[i][j].immovable
+        immovable = context.map.data[i][j].stack[-1]
         if immovable.prize == "food":
             self.hp += 50
         else:
@@ -119,7 +122,7 @@ class MainActor(AbstactActor):
         else:
             cur_power_koef += c.attack_power_coef
 
-        mob = context.map.data[i][j].actor
+        mob = context.map.data[i][j].stack[-1]
         mob_power_koef = mob.power_koef
         if j < self.j:
             mob_power_koef += c.head_power_coef
@@ -177,7 +180,8 @@ class Mob(AbstactActor):
             self.move_selector(key, context)
 
     def face_with_actor(self, i, j, context):
-        mob = context.map.data[i][j].actor
+        mob = context.map.data[i][j].stack[-1]
+
         if not isinstance(mob, MainActor):
             return
 
@@ -207,7 +211,7 @@ class Mob(AbstactActor):
                 del context.mobs_container.buf[i]
                 break
 
-        context.map.data[self.i][self.j].actor = None
+        del context.map.data[self.i][self.j].stack[-1]
 
 
 class MobsContainer(Drawable, Updatable):

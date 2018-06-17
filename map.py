@@ -46,8 +46,12 @@ class Cell(OnMapPlaceable, Drawable, Updatable):
 
     def __init__(self, i, j, background=None, immovable=None, actor=None):
         super().__init__(i, j)
-        self.actor = actor
-        self.immovable = immovable
+        self.stack = []
+        if immovable:
+            self.stack.append(immovable)
+        if actor:
+            self.stack.append(actor)
+
         self.background = background
 
     def update(self, event, context):
